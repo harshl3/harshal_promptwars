@@ -50,6 +50,21 @@ export async function signInWithGoogle(): Promise<User> {
   return result.user;
 }
 
+function getErrorMessage(err: unknown): string {
+  if (err instanceof Error) return err.message;
+  if (typeof err === "object" && err !== null && "message" in err) {
+    return String((err as { message: unknown }).message);
+  }
+  return String(err);
+}
+
+function getErrorCode(err: unknown): string | undefined {
+  if (typeof err === "object" && err !== null && "code" in err) {
+    return String((err as { code: unknown }).code);
+  }
+  return undefined;
+}
+
 /**
  * Attempt Anonymous Sign-In so user gets an authenticated Firebase UID automatically
  */
@@ -59,7 +74,7 @@ export async function initAnonymousAuth(): Promise<User | null> {
     const cred = await signInAnonymously(auth);
     console.log("[Firebase] Anonymous session active, UID:", cred.user.uid);
     return cred.user;
-  } catch (err: any) {
+  } catch {
     // Expected if Anonymous provider is not toggled in console yet
     console.info("[Firebase] Anonymous sign-in not enabled in console, using Google Sign-in or session ID.");
     return null;
@@ -126,15 +141,17 @@ export async function testFirestoreConnection(): Promise<{
       message: "Cloud Firestore is actively connected and reachable!",
       count: snap.size
     };
-  } catch (err: any) {
-    console.warn("[Firebase] Test connection failed:", err.code, err.message);
+  } catch (err: unknown) {
+    const errCode = getErrorCode(err);
+    const errMsg = getErrorMessage(err);
+    console.warn("[Firebase] Test connection failed:", errCode, errMsg);
     let advice = "Permission denied. Check Firestore security rules in Firebase Console.";
-    if (err.code === "permission-denied") {
+    if (errCode === "permission-denied") {
       advice = "Firestore security rules require publishing. In Firebase Console > Firestore > Rules, set allow read, write: if true; or sign in with Google.";
     }
     return {
       connected: false,
-      message: `${err.message || "Failed to reach Firestore"} (${advice})`,
+      message: `${errMsg} (${advice})`,
       count: 0
     };
   }
@@ -143,7 +160,7 @@ export async function testFirestoreConnection(): Promise<{
 /**
  * Deeply clean an object to remove `undefined` values which Firestore strictly forbids
  */
-function cleanForFirestore(obj: any): any {
+function cleanForFirestore<T>(obj: T): unknown {
   if (obj === undefined) {
     return null;
   }
@@ -153,13 +170,17 @@ function cleanForFirestore(obj: any): any {
   if (Array.isArray(obj)) {
     return obj.map(cleanForFirestore);
   }
-  const cleaned: Record<string, any> = {};
+  const cleaned: Record<string, unknown> = {};
   for (const [key, value] of Object.entries(obj)) {
     if (value !== undefined) {
       cleaned[key] = cleanForFirestore(value);
     }
   }
   return cleaned;
+}
+
+function cleanRecordForFirestore(obj: Record<string, unknown>): Record<string, unknown> {
+  return (cleanForFirestore(obj) || {}) as Record<string, unknown>;
 }
 
 /**
@@ -178,7 +199,7 @@ export async function saveDecisionRecord(
     console.log("[Firebase] Writing decision to Cloud Firestore 'decisions' collection...");
     
     // Sanitize payload to strip all undefined fields for Firestore
-    const sanitizedData = cleanForFirestore({
+    const sanitizedData = cleanRecordForFirestore({
       ...recordData,
       userId: activeUserId,
       userEmail: userEmail,
@@ -210,8 +231,10 @@ export async function saveDecisionRecord(
       storageType: "firestore",
       message: `Successfully stored in Cloud Firestore (Doc ID: ${docRef.id})!`
     };
-  } catch (firestoreErr: any) {
-    console.warn("[Firebase] Direct Firestore write failed:", firestoreErr.code, firestoreErr.message);
+  } catch (firestoreErr: unknown) {
+    const errCode = getErrorCode(firestoreErr);
+    const errMsg = getErrorMessage(firestoreErr);
+    console.warn("[Firebase] Direct Firestore write failed:", errCode, errMsg);
 
     // 2. FALLBACK: Local device storage if Firestore permissions or offline
     const localId = "local_" + Date.now() + "_" + Math.random().toString(36).substring(2, 7);
@@ -226,9 +249,9 @@ export async function saveDecisionRecord(
     const currentRecords = getLocalRecords();
     saveLocalRecords([fullRecord, ...currentRecords]);
 
-    const errorDetails = firestoreErr.code === "permission-denied"
+    const errorDetails = errCode === "permission-denied"
       ? "Firestore rules blocked the write. In Firebase Console > Firestore > Rules, allow read/write or sign in with Google."
-      : firestoreErr.message || "Network or permission issue";
+      : errMsg || "Network or permission issue";
 
     return {
       record: fullRecord,
@@ -281,8 +304,8 @@ export async function loadDecisionRecords(currentUser: User | null): Promise<{
         console.log(`[Firebase] Loaded ${records.length} records from Cloud Firestore.`);
         return { records, source: "firestore" };
       }
-    } catch (err: any) {
-      console.warn("[Firebase] Could not fetch user records from Firestore:", err.message);
+    } catch (err: unknown) {
+      console.warn("[Firebase] Could not fetch user records from Firestore:", getErrorMessage(err));
     }
   }
 
@@ -308,8 +331,8 @@ export async function loadDecisionRecords(currentUser: User | null): Promise<{
       records.sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime());
       return { records, source: "firestore" };
     }
-  } catch (err: any) {
-    console.warn("[Firebase] General Firestore query blocked or empty:", err.message);
+  } catch (err: unknown) {
+    console.warn("[Firebase] General Firestore query blocked or empty:", getErrorMessage(err));
   }
 
   const localRecords = getLocalRecords();
@@ -324,8 +347,8 @@ export async function deleteDecisionRecord(recordId: string, _currentUser?: User
     try {
       await deleteDoc(doc(db, "decisions", recordId));
       console.log("[Firebase] Deleted record from Cloud Firestore:", recordId);
-    } catch (err: any) {
-      console.error("[Firebase] Firestore delete error:", err.message);
+    } catch (err: unknown) {
+      console.error("[Firebase] Firestore delete error:", getErrorMessage(err));
     }
   }
 

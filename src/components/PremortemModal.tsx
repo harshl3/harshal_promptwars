@@ -26,14 +26,9 @@ export const PremortemModal: React.FC<PremortemModalProps> = ({
   premortemResult,
   onExecutePremortem
 }) => {
-  const [selectedOption, setSelectedOption] = useState<string>(options[0] || "");
+  const [selectedOption, setSelectedOption] = useState<string>("");
+  const activeOption = selectedOption || options[0] || "";
   const [timeHorizon, setTimeHorizon] = useState<string>("12 months");
-
-  useEffect(() => {
-    if (options.length > 0 && !selectedOption) {
-      setSelectedOption(options[0]);
-    }
-  }, [options, selectedOption]);
 
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -47,8 +42,8 @@ export const PremortemModal: React.FC<PremortemModalProps> = ({
 
   const handleRun = (e: React.FormEvent) => {
     e.preventDefault();
-    if (!selectedOption) return;
-    onExecutePremortem(selectedOption, timeHorizon);
+    if (!activeOption) return;
+    onExecutePremortem(activeOption, timeHorizon);
   };
 
   return (
@@ -102,7 +97,7 @@ export const PremortemModal: React.FC<PremortemModalProps> = ({
                 </label>
                 <select
                   id="premortem-option"
-                  value={selectedOption}
+                  value={activeOption}
                   onChange={(e) => setSelectedOption(e.target.value)}
                   disabled={isLoading}
                   className="w-full px-3 py-2 text-xs rounded-xl border border-stone-300 dark:border-stone-600 bg-white dark:bg-stone-800 text-stone-900 dark:text-white focus:outline-hidden focus:ring-2 focus:ring-indigo-500"

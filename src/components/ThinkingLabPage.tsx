@@ -47,8 +47,9 @@ export const ThinkingLabPage: React.FC = () => {
         analysisSummary: "Direct Devil's Advocate inquiry"
       });
       setChallengeResult(res);
-    } catch (err: any) {
-      setError(err.message || "Failed to challenge thinking.");
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Failed to challenge thinking.";
+      setError(msg);
     } finally {
       setIsChallenging(false);
     }
@@ -67,8 +68,9 @@ export const ThinkingLabPage: React.FC = () => {
         timeHorizon: premortemHorizon
       });
       setPremortemResult(res);
-    } catch (err: any) {
-      setError(err.message || "Failed to simulate pre-mortem.");
+    } catch (err: unknown) {
+      const msg = err instanceof Error ? err.message : "Failed to simulate pre-mortem.";
+      setError(msg);
     } finally {
       setIsPremortemLoading(false);
     }

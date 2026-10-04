@@ -13,7 +13,7 @@ import {
   RotateCcw
 } from "lucide-react";
 import type { User } from "firebase/auth";
-import { useTheme } from "../context/ThemeContext";
+import { useTheme } from "../context/useTheme";
 
 export type NavPage = "overview" | "workspace" | "lab";
 

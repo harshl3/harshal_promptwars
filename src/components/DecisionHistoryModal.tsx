@@ -44,8 +44,9 @@ export const DecisionHistoryModal: React.FC<DecisionHistoryModalProps> = ({
     try {
       const res = await testFirestoreConnection();
       setTestResult(res);
-    } catch (e: any) {
-      setTestResult({ connected: false, message: e.message || "Failed test" });
+    } catch (e: unknown) {
+      const msg = e instanceof Error ? e.message : "Failed test";
+      setTestResult({ connected: false, message: msg });
     } finally {
       setTestingDb(false);
     }

@@ -100,9 +100,10 @@ export function AppContent() {
       setAnalysis(result);
       setWorkspaceMode("report");
       window.scrollTo({ top: 0, behavior: "smooth" });
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Analysis error:", err);
-      setError(err.message || "Failed to analyze decision. Please check server connection.");
+      const msg = err instanceof Error ? err.message : "Failed to analyze decision. Please check server connection.";
+      setError(msg);
     } finally {
       setIsAnalyzing(false);
     }
@@ -125,9 +126,10 @@ export function AppContent() {
         analysisSummary: analysis.decisionSummary
       });
       setChallengeResult(res);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Challenge error:", err);
-      setError(err.message || "Could not generate challenge argument.");
+      const msg = err instanceof Error ? err.message : "Could not generate challenge argument.";
+      setError(msg);
     } finally {
       setIsChallenging(false);
     }
@@ -145,9 +147,10 @@ export function AppContent() {
         timeHorizon
       });
       setPremortemResult(res);
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Pre-mortem error:", err);
-      setError(err.message || "Could not generate pre-mortem scenario.");
+      const msg = err instanceof Error ? err.message : "Could not generate pre-mortem scenario.";
+      setError(msg);
     } finally {
       setIsPremortemLoading(false);
     }
@@ -175,7 +178,7 @@ export function AppContent() {
       setSavedRecords(records);
       setHistorySource(source);
       return result;
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Save error:", err);
       throw err;
     } finally {
@@ -205,7 +208,7 @@ export function AppContent() {
   const handleSignIn = async () => {
     try {
       await signInWithGoogle();
-    } catch (err: any) {
+    } catch (err: unknown) {
       console.error("Sign in failed:", err);
       setError("Google Sign-In canceled or unavailable.");
     }
