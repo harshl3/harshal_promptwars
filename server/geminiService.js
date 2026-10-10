@@ -13,11 +13,11 @@ const genAI = API_KEY ? new GoogleGenerativeAI(API_KEY) : null;
 
 // Candidate models in order of preferred speed and availability
 const MODEL_CANDIDATES = [
+  "gemini-3.8-flash",
+  "gemini-3.5-flash",
   "gemini-3.5-flash-lite",
   "gemini-flash-lite-latest",
-  "gemini-3.5-flash",
-  "gemini-2.5-flash-lite",
-  "gemini-3.8-flash"
+  "gemini-2.5-flash-lite"
 ];
 
 /**

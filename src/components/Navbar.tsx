@@ -2,7 +2,6 @@ import React, { useState } from "react";
 import {
   Compass,
   History,
-  ShieldCheck,
   LogIn,
   LogOut,
   ChevronDown,
@@ -23,7 +22,6 @@ interface NavbarProps {
   currentUser: User | null;
   historyCount: number;
   onOpenHistory: () => void;
-  onOpenAudit: () => void;
   onNewDecision: () => void;
   onSignIn: () => void;
   onSignOut: () => void;
@@ -36,7 +34,6 @@ export const Navbar: React.FC<NavbarProps> = ({
   currentUser,
   historyCount,
   onOpenHistory,
-  onOpenAudit,
   onNewDecision,
   onSignIn,
   onSignOut,
@@ -166,16 +163,6 @@ export const Navbar: React.FC<NavbarProps> = ({
                 {historyCount}
               </span>
             )}
-          </button>
-
-          {/* Evaluator Scorecard Audit */}
-          <button
-            onClick={onOpenAudit}
-            className="inline-flex items-center gap-1.5 px-2.5 py-1.5 text-xs font-semibold text-emerald-800 dark:text-emerald-300 bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-950/60 border border-emerald-200/80 dark:border-emerald-800/60 rounded-lg transition-colors cursor-pointer"
-            title="View PromptWars 2026 Evaluation Audit"
-          >
-            <ShieldCheck className="w-3.5 h-3.5 text-emerald-600 dark:text-emerald-400" />
-            <span className="hidden sm:inline">Audit</span>
           </button>
 
           {/* Light / Dark Mode Toggle */}

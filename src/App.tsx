@@ -8,7 +8,6 @@ import { ChallengeThinkingModal } from "./components/ChallengeThinkingModal";
 import { PremortemModal } from "./components/PremortemModal";
 import { ReflectionSection } from "./components/ReflectionSection";
 import { DecisionHistoryModal } from "./components/DecisionHistoryModal";
-import { AuditReportModal } from "./components/AuditReportModal";
 import { ThemeProvider } from "./context/ThemeContext";
 import {
   signInWithGoogle,
@@ -55,7 +54,6 @@ export function AppContent() {
 
   // Modals state
   const [isHistoryOpen, setIsHistoryOpen] = useState(false);
-  const [isAuditOpen, setIsAuditOpen] = useState(false);
   const [isChallengeOpen, setIsChallengeOpen] = useState(false);
   const [isPremortemOpen, setIsPremortemOpen] = useState(false);
 
@@ -242,6 +240,14 @@ export function AppContent() {
       <div className="fixed top-1/3 right-10 w-96 h-96 bg-purple-400/20 dark:bg-purple-600/10 rounded-full blur-3xl pointer-events-none -z-10" />
       <div className="fixed bottom-10 left-10 w-80 h-80 bg-amber-300/20 dark:bg-amber-600/10 rounded-full blur-3xl pointer-events-none -z-10" />
 
+      {/* Skip to Main Content Link for Keyboard Accessibility */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-3 focus:left-3 focus:z-50 focus:px-4 focus:py-2 focus:bg-indigo-600 focus:text-white focus:rounded-lg focus:shadow-lg focus:outline-none focus:ring-2 focus:ring-white text-xs font-semibold"
+      >
+        Skip to main content
+      </a>
+
       {/* Top Navigation */}
       <Navbar
         currentPage={currentPage}
@@ -252,7 +258,6 @@ export function AppContent() {
         currentUser={currentUser}
         historyCount={savedRecords.length}
         onOpenHistory={() => setIsHistoryOpen(true)}
-        onOpenAudit={() => setIsAuditOpen(true)}
         onNewDecision={handleNewDecision}
         onSignIn={handleSignIn}
         onSignOut={handleSignOut}
@@ -278,7 +283,7 @@ export function AppContent() {
       )}
 
       {/* Main Page Rendering */}
-      <main className="flex-1">
+      <main id="main-content" className="flex-1">
         
         {/* PAGE 1: Overview Landing Page */}
         {currentPage === "overview" && (
@@ -404,12 +409,6 @@ export function AppContent() {
         onSelectRecord={handleSelectRecord}
         onDeleteRecord={handleDeleteRecord}
         source={historySource}
-      />
-
-      {/* Evaluator Scorecard Audit Modal */}
-      <AuditReportModal
-        isOpen={isAuditOpen}
-        onClose={() => setIsAuditOpen(false)}
       />
 
       {/* Footer */}
